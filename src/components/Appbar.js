@@ -11,10 +11,12 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
-
+import { useHistory } from 'react-router-dom'
 export default function Appbar() {
   const [auth, setAuth] = React.useState(true);
   const [anchorEl, setAnchorEl] = React.useState(null);
+ // const navigate = useNavigate();
+   // const history = useHistory();
 
   const handleChange = (event) => {
     setAuth(event.target.checked);
@@ -25,7 +27,9 @@ export default function Appbar() {
   };
 
   const handleClose = () => {
-    setAnchorEl(null);
+   // navigate('/login');
+   window.location.href = '/login'; 
+    //setAnchorEl(null);
   };
 
   return (
@@ -83,8 +87,8 @@ export default function Appbar() {
                 open={Boolean(anchorEl)}
                 onClose={handleClose}
               >
-                <MenuItem onClick={handleClose}>Profile</MenuItem>
-                <MenuItem onClick={handleClose}>My account</MenuItem>
+                <MenuItem onClick={handleClose}>Logout</MenuItem>
+                
               </Menu>
             </div>
           )}
