@@ -49,8 +49,23 @@ export default function Trainee() {
     const handleRegisterSubmit = (e) => {
         e.preventDefault();
         const student = { name, email, course, designation, organisation };
+        const token = localStorage.getItem('jwtToken');
+      
+        // Check if token exists
+        if (!token) {
+          console.error('JWT token not found. Please log in to access trainee data.');
+          // Handle the case where there's no token (e.g., redirect to login)
+          return;
+        }
+      
+        // Create Axios instance with default headers (optional)
+        const axiosInstance = axios.create({
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
         console.log(student);
-        axios.post("http://localhost:8080/trainee/add", student)
+        axiosInstance.post("http://localhost:8080/trainee/add", student)
             .then(() => {
                 alert("Successfully registered");
                 setName('');
@@ -68,8 +83,23 @@ export default function Trainee() {
     };
 
     const handleEditSubmit = () => {
+        const token = localStorage.getItem('jwtToken');
+      
+        // Check if token exists
+        if (!token) {
+          console.error('JWT token not found. Please log in to access trainee data.');
+          // Handle the case where there's no token (e.g., redirect to login)
+          return;
+        }
+      
+        // Create Axios instance with default headers (optional)
+        const axiosInstance = axios.create({
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
         const url = `http://localhost:8080/trainee/update/${selectedTrainee.id}`;
-        axios.put(url, selectedTrainee)
+        axiosInstance.put(url, selectedTrainee)
             .then(() => {
                 alert("Successfully updated");
                 setOpenEditModal(false);
@@ -83,10 +113,27 @@ export default function Trainee() {
     };
 
     const handleDeleteClick = (trainee) => {
+
+        
         const traineeId = trainee.id;
+        const token = localStorage.getItem('jwtToken');
+      
+        // Check if token exists
+        if (!token) {
+          console.error('JWT token not found. Please log in to access trainee data.');
+          // Handle the case where there's no token (e.g., redirect to login)
+          return;
+        }
+      
+        // Create Axios instance with default headers (optional)
+        const axiosInstance = axios.create({
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
         const deleteUrl = `http://localhost:8080/trainee/delete/${traineeId}`;
 
-        axios.delete(deleteUrl)
+        axiosInstance.delete(deleteUrl)
             .then(response => {
                 if (response.status === 200) {
                     alert('Trainee deleted successfully.');
@@ -102,20 +149,76 @@ export default function Trainee() {
     };
 
     const loadData = () => {
-        axios.get("http://localhost:8080/trainee/getall")
-            .then(response => {
-                if (response.status === 200) {
-                    setTrainees(response.data);
-                } else {
-                    alert("Failed to fetch trainee data.");
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert("Failed to fetch trainee data.");
-            });
-    };
+        // Retrieve the JWT token from storage (replace with your storage mechanism)
+        const token = localStorage.getItem('jwtToken');
+      
+        // Check if token exists
+        if (!token) {
+          console.error('JWT token not found. Please log in to access trainee data.');
+          // Handle the case where there's no token (e.g., redirect to login)
+          return;
+        }
+      
+        // Create Axios instance with default headers (optional)
+        const axiosInstance = axios.create({
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+      
+        // Make the GET request using Axios instance
+        axiosInstance.get("http://localhost:8080/trainee/getall")
+          .then(response => {
+            if (response.status === 200) {
+              setTrainees(response.data);
+            } else {
+              alert("Failed to fetch trainee data.");
+              // Handle potential authorization errors (e.g., 401 Unauthorized)
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            alert("Failed to fetch trainee data.");
+          });
+      };
 
+      const logout = async () => {
+        try {
+          // Retrieve the JWT token from storage
+          const token = localStorage.getItem('jwtToken');
+      
+          if (!token) {
+            console.error('JWT token not found. Please log in again.');
+            return; // Handle the case where there's no token
+          }
+      
+          // Create Axios instance with default headers (optional)
+          const axiosInstance = axios.create({
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+      
+          // Send POST request to logout endpoint with optional refresh token (if applicable)
+          const response = await axiosInstance.post('http://localhost:8080/logout', {
+            refreshToken: localStorage.getItem('refreshToken') // Optional: Include refresh token
+          });
+      
+          if (response.status === 200) {
+            // Handle successful logout response
+            localStorage.removeItem('jwtToken');
+            localStorage.removeItem('refreshToken'); // Remove refresh token as well
+            window.location.href = '/login'; // Redirect to login page
+          } else {
+            console.error('Logout request failed:', response.statusText);
+            // Handle potential errors (e.g., display user-friendly error message)
+          }
+        } catch (error) {
+          console.error('Error during logout:', error);
+          // Handle errors (e.g., network issues, unexpected server response)
+        }
+      };
+      
     useEffect(() => {
         loadData();
     }, []);
@@ -185,6 +288,7 @@ export default function Trainee() {
                         />
                     </Paper>
                 </div>
+               
             </div>
             {/* Registration Modal */}
             <Modal open={openRegisterModal} onClose={handleModalClose}>

@@ -1,77 +1,79 @@
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
-import axios from "axios";
+import axios from "axios"; // Import Axios
+import { TextField, Button, Grid, Typography } from "@mui/material";
 
 function Login() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const navigate = useNavigate();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
-    async function login(event) {
-        event.preventDefault();
-        try {
-            const res = await axios.post("http://localhost:8080/user/login", {
-                email: email,
-                password: password,
-            });
+  async function login(event) {
+    event.preventDefault();
+    try {
+      const response = await axios.post("http://localhost:8080/login", {
+        username,
+        password,
+      });
 
-            console.log(res.data);
+      if (response.status === 200) {
+        // Successful login, store JWT token (replace with appropriate logic)
+        const token = response.data.token; // Assuming response contains a token field
+        localStorage.setItem('jwtToken', token); // Store token in secure storage (replace with HttpOnly cookie if possible)
 
-            if (res.data.message === "3") {
-                alert("Email not exists");
-            } else if (res.data.message === "1") {
-                navigate('/admin');
-            } else {
-                alert("Incorrect Email and Password not match");
-            }
-        } catch (err) {
-            console.error(err);
-            alert("An error occurred during login");
-        }
+        navigate('/admin'); // Assuming admin route after successful login
+      } else {
+        alert("Invalid username or password");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("An error occurred during login");
+    }
+  }
+
+  // Add Axios interceptor (place this outside any function)
+  axios.interceptors.request.use(config => {
+    const token = localStorage.getItem('jwtToken'); // Retrieve token from secure storage
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`; // Add token to Authorization header
     }
 
-    return (
-        <div className="container">
-            <div className="row">
-                <div className="col-md-6 offset-md-3">
-                    <div className="card mt-5">
-                        <div className="card-header">
-                            <h2 className="text-center">Login</h2>
-                        </div>
-                        <div className="card-body">
-                            <form onSubmit={login}>
-                                <div className="form-group">
-                                    <label htmlFor="email">Email&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;</label>
-                                    <input
-                                        type="email"
-                                        className="form-control"
-                                        id="email"
-                                        placeholder="Enter Email"
-                                        value={email}
-                                        onChange={(event) => setEmail(event.target.value)}
-                                    />
-                                </div>
-                                <br/>
-                                <div className="form-group">
-                                    <label htmlFor="password">Password:&nbsp;</label>
-                                    <input
-                                        type="password"
-                                        className="form-control"
-                                        id="password"
-                                        placeholder="Enter Password"
-                                        value={password}
-                                        onChange={(event) => setPassword(event.target.value)}
-                                    />
-                                </div>
-                                <br/>
-                                <button type="submit" className="btn btn-primary btn-block">Login</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
+    return config;
+  });
+
+  return (
+    <Grid container justifyContent="center" alignItems="center">
+      <Grid item xs={12} sm={6} md={4}>
+        <Typography variant="h5" sx={{ mb: 3, textAlign: "center" }}>
+          Login
+        </Typography>
+        <form onSubmit={login}>
+          <TextField
+            label="Username"
+            type="text"
+            margin="normal"
+            fullWidth
+            required
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+          />
+          <TextField
+            label="Password"
+            type="password"
+            margin="normal"
+            fullWidth
+            required
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+          />
+          <Button type="submit" variant="contained" color="primary" fullWidth>
+            Login
+          </Button>
+        </form>
+      </Grid>
+    </Grid>
+  );
 }
 
 export default Login;

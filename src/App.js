@@ -8,13 +8,20 @@ import Login from './components/Login';
 function App() {
   return (
     <div className="App">
-      <Appbar />
       <Router>
-       
-        <Routes> {/* Wrap routes in <Routes> */}
-          <Route exact path="/" element={<Register />} /> {/* Use 'element' prop */}
-          <Route path="/admin" element={<Trainee />} /> {/* Use 'element' prop */}
+        <Routes>
+          {/* Routes without AppBar */}
+          <Route path="/" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+
+          {/* Trainee route with AppBar */}
+          <Route path="/admin" element={
+            <div>
+              <Appbar />  {/* Render AppBar here */}
+              <Trainee /> {/* Render Trainee component */}
+            </div>
+          } />
         </Routes>
       </Router>
     </div>

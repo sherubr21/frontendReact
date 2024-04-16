@@ -46,7 +46,7 @@ export default function Register() {
         const student = { name, email, course, designation, organisation };
         console.log(student);
 
-        fetch("http://localhost:8080/trainee/add", {
+        fetch("http://localhost:8080/trainee_register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(student)

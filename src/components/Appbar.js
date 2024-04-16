@@ -12,11 +12,12 @@ import FormGroup from '@mui/material/FormGroup';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import { useHistory } from 'react-router-dom'
+import axios from 'axios';
+
 export default function Appbar() {
   const [auth, setAuth] = React.useState(true);
   const [anchorEl, setAnchorEl] = React.useState(null);
- // const navigate = useNavigate();
-   // const history = useHistory();
+  const [jwtToken, setJwtToken] = React.useState(localStorage.getItem('jwtToken'));
 
   const handleChange = (event) => {
     setAuth(event.target.checked);
@@ -27,9 +28,38 @@ export default function Appbar() {
   };
 
   const handleClose = () => {
-   // navigate('/login');
-   window.location.href = '/login'; 
-    //setAnchorEl(null);
+    window.location.href = '/login'; 
+  };
+
+  const logout = async () => {
+    try {
+      const token = localStorage.getItem('jwtToken');
+
+      if (!token) {
+        console.error('JWT token not found. Please log in again.');
+        return;
+      }
+
+      const axiosInstance = axios.create({
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const response = await axiosInstance.post('http://localhost:8080/logout', {
+        refreshToken: localStorage.getItem('refreshToken')
+      });
+
+      if (response.status === 200) {
+        localStorage.removeItem('jwtToken');
+        localStorage.removeItem('refreshToken');
+        window.location.href = '/login';
+      } else {
+        console.error('Logout request failed:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
   };
 
   return (
@@ -39,7 +69,7 @@ export default function Appbar() {
           control={
             <Switch
               checked={auth}
-              onChange={handleChange}
+              onChange={logout}
               aria-label="login switch"
             />
           }
@@ -58,9 +88,9 @@ export default function Appbar() {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Athang Training Regestration
+            Athang Training Registration
           </Typography>
-          {auth && (
+        
             <div>
               <IconButton
                 size="large"
@@ -87,11 +117,10 @@ export default function Appbar() {
                 open={Boolean(anchorEl)}
                 onClose={handleClose}
               >
-                <MenuItem onClick={handleClose}>Logout</MenuItem>
-                
+                <MenuItem onClick={logout}>Logout</MenuItem>
               </Menu>
             </div>
-          )}
+         
         </Toolbar>
       </AppBar>
     </Box>
